@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="sw" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ChumbaLink | Tafuta Chumba Karibu na Chuo{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            teal: '#0d9488',
+                            'teal-dark': '#0f766e',
+                            amber: '#f59e0b',
+                            ink: '#0f172a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-50 text-slate-800">
+
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="{{ url_for('main.home') }}" class="flex items-center gap-2 font-bold text-brand-teal-dark text-lg">
+                <i class="fa-solid fa-house-chimney text-brand-amber"></i> ChumbaLink
+            </a>
+            <div class="flex items-center gap-3 text-sm">
+                <a href="{{ url_for('main.browse') }}" class="hidden sm:inline text-slate-600 hover:text-brand-teal-dark">Tazama Vyumba</a>
+                {% if current_user %}
+                    {% if current_user.role == 'owner' %}
+                        <a href="{{ url_for('room.new_room') }}" class="hidden sm:inline text-slate-600 hover:text-brand-teal-dark">Weka Chumba</a>
+                        <a href="{{ url_for('room.my_rooms') }}" class="hidden sm:inline text-slate-600 hover:text-brand-teal-dark">Vyumba Vyangu</a>
+                    {% elif current_user.role == 'client' %}
+                        <a href="{{ url_for('request.custom_request') }}" class="hidden sm:inline text-slate-600 hover:text-brand-teal-dark">Omba Chumba</a>
+                        <a href="{{ url_for('request.my_requests') }}" class="hidden sm:inline text-slate-600 hover:text-brand-teal-dark">Maombi Yangu</a>
+                    {% elif current_user.role == 'admin' %}
+                        <a href="{{ url_for('admin.dashboard') }}" class="hidden sm:inline text-slate-600 hover:text-brand-teal-dark">Admin</a>
+                        <a href="{{ url_for('admin.requests_list') }}" class="hidden sm:inline text-slate-600 hover:text-brand-teal-dark">Maombi</a>
+                        <a href="{{ url_for('admin.rooms_list') }}" class="hidden sm:inline text-slate-600 hover:text-brand-teal-dark">Vyumba Vyote</a>
+                    {% endif %}
+                    <span class="text-slate-400 hidden sm:inline">|</span>
+                    <span class="text-slate-500 hidden md:inline">{{ current_user.full_name }}</span>
+                    <a href="{{ url_for('auth.logout') }}" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-right-from-bracket"></i></a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="text-slate-600 hover:text-brand-teal-dark">Ingia</a>
+                    <a href="{{ url_for('auth.register') }}" class="bg-brand-teal hover:bg-brand-teal-dark text-white px-4 py-2 rounded-lg font-medium">Jisajili</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="max-w-3xl mx-auto px-4 pt-4 space-y-2">
+              {% for category, message in messages %}
+                <div class="p-3 rounded-lg text-sm border {% if category == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-800{% else %}bg-rose-50 border-rose-200 text-rose-800{% endif %}">
+                    {{ message }}
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-brand-ink text-slate-400 mt-12">
+        <div class="max-w-6xl mx-auto px-4 py-8 text-center text-xs">
+            &copy; 2026 ChumbaLink &mdash; Tunakuunganisha na chumba sahihi karibu na chuo chako.
+        </div>
+    </footer>
+</body>
+</html>

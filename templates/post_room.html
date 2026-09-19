@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}Weka Chumba | ChumbaLink{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-10">
+    <h1 class="text-xl font-bold text-slate-800 mb-6">Weka Tangazo la Chumba</h1>
+
+    {% if not cloud_name or not upload_preset %}
+        <div class="bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-lg p-4 mb-4">
+            Cloudinary haijasanidiwa vizuri (CLOUDINARY_CLOUD_NAME / CLOUDINARY_UPLOAD_PRESET).
+            Picha na video hazitopakiwa mpaka hii isanidiwe -- angalia README.
+        </div>
+    {% endif %}
+
+    <form id="room-form" method="post" class="bg-white border border-slate-200 rounded-xl p-6 space-y-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div>
+            <label class="text-sm text-slate-600">Kichwa cha tangazo</label>
+            <input type="text" name="title" required placeholder="mfano: Chumba cha Single Pasua"
+                   class="w-full border border-slate-200 rounded-lg px-3 py-2 mt-1">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+            <div>
+                <label class="text-sm text-slate-600">Eneo</label>
+                <input type="text" name="area" required class="w-full border border-slate-200 rounded-lg px-3 py-2 mt-1">
+            </div>
+            <div>
+                <label class="text-sm text-slate-600">Umbali kutoka chuo (km)</label>
+                <input type="number" step="0.1" name="distance_to_college" class="w-full border border-slate-200 rounded-lg px-3 py-2 mt-1">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+            <div>
+                <label class="text-sm text-slate-600">Bei (TZS/mwezi)</label>
+                <input type="number" name="price" required class="w-full border border-slate-200 rounded-lg px-3 py-2 mt-1">
+            </div>
+            <div>
+                <label class="text-sm text-slate-600">Aina ya chumba</label>
+                <select name="room_type" required class="w-full border border-slate-200 rounded-lg px-3 py-2 mt-1">
+                    {% for rt in room_types %}
+                        <option value="{{ rt }}">{{ rt }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div>
+            <label class="text-sm text-slate-600">Sifa za chumba (umeme, maji, choo ndani n.k)</label>
+            <textarea name="features" rows="2" class="w-full border border-slate-200 rounded-lg px-3 py-2 mt-1"></textarea>
+        </div>
+
+        <div>
+            <label class="text-sm text-slate-600">Maelekezo ya ziada ya kufika</label>
+            <textarea name="extra_directions" rows="2" class="w-full border border-slate-200 rounded-lg px-3 py-2 mt-1"></textarea>
+        </div>
+
+        <div>
+            <label class="text-sm text-slate-600">Namba ya simu ya mawasiliano</label>
+            <input type="tel" name="contact_phone" required class="w-full border border-slate-200 rounded-lg px-3 py-2 mt-1">
+        </div>
+
+        <div>
+            <label class="text-sm text-slate-600">Picha za chumba (unaweza kuchagua zaidi ya moja)</label>
+            <input type="file" id="images-input" accept="image/*" multiple class="w-full border border-slate-200 rounded-lg px-3 py-2 mt-1 text-sm">
+        </div>
+
+        <div>
+            <label class="text-sm text-slate-600">Video ya chumba (hiari, chini ya 10MB)</label>
+            <input type="file" id="video-input" accept="video/*" class="w-full border border-slate-200 rounded-lg px-3 py-2 mt-1 text-sm">
+        </div>
+
+        <input type="hidden" name="media_json" id="media-json">
+
+        <div id="upload-status" class="text-xs text-slate-500 hidden"></div>
+
+        <button type="submit" id="submit-btn" class="w-full bg-brand-teal hover:bg-brand-teal-dark text-white rounded-lg py-2.5 font-semibold">
+            Chapisha Chumba
+        </button>
+    </form>
+</div>
+
+<script>
+(function () {
+    const CLOUD_NAME = {{ cloud_name | tojson }};
+    const UPLOAD_PRESET = {{ upload_preset | tojson }};
+
+    const form = document.getElementById('room-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const statusBox = document.getElementById('upload-status');
+    const mediaJsonInput = document.getElementById('media-json');
+    const imagesInput = document.getElementById('images-input');
+    const videoInput = document.getElementById('video-input');
+
+    function setStatus(text) {
+        statusBox.textContent = text;
+        statusBox.classList.remove('hidden');
+    }
+
+    async function uploadToCloudinary(file, resourceType) {
+        const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${resourceType}/upload`;
+        const data = new FormData();
+        data.append('file', file);
+        data.append('upload_preset', UPLOAD_PRESET);
+
+        const res = await fetch(url, { method: 'POST', body: data });
+        if (!res.ok) {
+            const errText = await res.text().catch(function () { return ''; });
+            throw new Error(`Imeshindwa kupakia ${file.name}: ${errText || res.status}`);
+        }
+        const json = await res.json();
+        return { url: json.secure_url, public_id: json.public_id, type: resourceType };
+    }
+
+    form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        if (!CLOUD_NAME || !UPLOAD_PRESET) {
+            alert('Cloudinary haijasanidiwa (angalia .env). Chumba kitawekwa bila picha/video kwa sasa, au sanidi kwanza.');
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Inapakia...';
+
+        const mediaResults = [];
+        try {
+            const imageFiles = Array.from(imagesInput.files || []);
+            for (let i = 0; i < imageFiles.length; i++) {
+                setStatus(`Inapakia picha ${i + 1} ya ${imageFiles.length}...`);
+                const result = await uploadToCloudinary(imageFiles[i], 'image');
+                mediaResults.push(result);
+            }
+
+            if (videoInput.files && videoInput.files[0]) {
+                setStatus('Inapakia video...');
+                const result = await uploadToCloudinary(videoInput.files[0], 'video');
+                mediaResults.push(result);
+            }
+        } catch (err) {
+            alert(err.message || 'Kuna tatizo la kupakia picha/video. Jaribu tena.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Chapisha Chumba';
+            setStatus('');
+            return;
+        }
+
+        mediaJsonInput.value = JSON.stringify(mediaResults);
+        setStatus('Inatuma taarifa za chumba...');
+        submitBtn.textContent = 'Inatuma...';
+
+        form.submit();
+    });
+})();
+</script>
+
+{% endblock %}

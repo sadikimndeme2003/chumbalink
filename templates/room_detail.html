@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}{{ room.title }} | ChumbaLink{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+
+    {% if room.images %}
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mb-6">
+            {% for img in room.images %}
+                <img src="{{ img.url }}" class="w-full h-36 object-cover rounded-lg">
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if room.videos %}
+        <div class="mb-6 space-y-3">
+            {% for vid in room.videos %}
+                <video controls class="w-full rounded-lg max-h-80">
+                    <source src="{{ vid.url }}" type="video/mp4">
+                </video>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="bg-white border border-slate-200 rounded-xl p-6">
+        <div class="flex justify-between items-start mb-2">
+            <h1 class="text-xl font-bold text-slate-800">{{ room.title }}</h1>
+            <span class="text-lg font-bold text-brand-teal-dark">TZS {{ "{:,.0f}".format(room.price) }}</span>
+        </div>
+        <p class="text-sm text-slate-500 mb-4">
+            <i class="fa-solid fa-location-dot"></i> {{ room.area }}
+            {% if room.distance_to_college %} &middot; {{ room.distance_to_college }} km kutoka chuo{% endif %}
+            &middot; <span class="capitalize">{{ room.room_type }}</span>
+        </p>
+
+        {% if room.features %}
+        <div class="mb-4">
+            <h3 class="text-sm font-semibold text-slate-700 mb-1">Sifa za chumba</h3>
+            <p class="text-sm text-slate-600">{{ room.features }}</p>
+        </div>
+        {% endif %}
+
+        {% if room.extra_directions %}
+        <div class="mb-4">
+            <h3 class="text-sm font-semibold text-slate-700 mb-1">Maelekezo ya kufika</h3>
+            <p class="text-sm text-slate-600">{{ room.extra_directions }}</p>
+        </div>
+        {% endif %}
+
+        <div class="border-t border-slate-100 pt-4 mt-4">
+            {% if room.status != 'available' %}
+                <p class="text-sm text-amber-600 font-medium mb-2">
+                    <i class="fa-solid fa-clock"></i> Chumba hiki tayari kimeombwa na mteja mwingine.
+                </p>
+            {% endif %}
+
+            {% if room.whatsapp_url or room.tel_url %}
+            <div class="grid grid-cols-2 gap-2 mb-3">
+                {% if room.tel_url %}
+                <a href="{{ room.tel_url }}" class="flex items-center justify-center gap-2 border border-slate-200 rounded-lg py-2.5 text-sm font-semibold text-slate-700">
+                    <i class="fa-solid fa-phone"></i> Piga Simu
+                </a>
+                {% endif %}
+                {% if room.whatsapp_url %}
+                <a href="{{ room.whatsapp_url }}" target="_blank" rel="noopener" class="flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg py-2.5 text-sm font-semibold">
+                    <i class="fa-brands fa-whatsapp"></i> WhatsApp
+                </a>
+                {% endif %}
+            </div>
+            <p class="text-xs text-slate-400 text-center mb-3">Vitufe hivi vinakupeleka kwa msimamizi (admin), siyo mwenye nyumba moja kwa moja.</p>
+            {% endif %}
+
+            {% if current_user and current_user.role == 'client' and room.status == 'available' %}
+                <form method="post" action="{{ url_for('request.request_room', room_id=room.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="w-full bg-brand-amber hover:bg-amber-600 text-white rounded-lg py-2.5 font-semibold">
+                        Omba Chumba Hiki
+                    </button>
+                </form>
+                <p class="text-xs text-slate-400 mt-2 text-center">
+                    Baada ya kuomba, msimamizi (admin) atakuunganisha na mwenye chumba.
+                </p>
+            {% elif not current_user %}
+                <a href="{{ url_for('auth.login', next=request.path) }}" class="block text-center w-full bg-brand-teal hover:bg-brand-teal-dark text-white rounded-lg py-2.5 font-semibold">
+                    Ingia ili Uombe Chumba
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

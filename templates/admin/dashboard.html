@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard | ChumbaLink{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <h1 class="text-xl font-bold text-slate-800 mb-6">Dashibodi ya Admin</h1>
+
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white border border-slate-200 rounded-xl p-5 text-center">
+            <p class="text-2xl font-bold text-amber-600">{{ pending_count }}</p>
+            <p class="text-xs text-slate-500 mt-1">Maombi Yanayosubiri</p>
+        </div>
+        <a href="{{ url_for('admin.rooms_list', status='available') }}" class="bg-white border border-slate-200 rounded-xl p-5 text-center hover:shadow">
+            <p class="text-2xl font-bold text-emerald-600">{{ available_count }}</p>
+            <p class="text-xs text-slate-500 mt-1">Vinavyopatikana</p>
+        </a>
+        <a href="{{ url_for('admin.rooms_list', status='booked') }}" class="bg-white border border-slate-200 rounded-xl p-5 text-center hover:shadow">
+            <p class="text-2xl font-bold text-blue-600">{{ booked_count }}</p>
+            <p class="text-xs text-slate-500 mt-1">Vimebook</p>
+        </a>
+        <a href="{{ url_for('admin.rooms_list', status='archived') }}" class="bg-white border border-slate-200 rounded-xl p-5 text-center hover:shadow">
+            <p class="text-2xl font-bold text-slate-700">{{ archived_count }}</p>
+            <p class="text-xs text-slate-500 mt-1">Vimekamilika</p>
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <a href="{{ url_for('admin.requests_list') }}" class="block text-center bg-brand-teal hover:bg-brand-teal-dark text-white rounded-lg py-3 font-semibold">
+            Ona Maombi Yote &rarr;
+        </a>
+        <a href="{{ url_for('admin.rooms_list') }}" class="block text-center bg-slate-800 hover:bg-slate-900 text-white rounded-lg py-3 font-semibold">
+            Ona Vyumba Vyote &rarr;
+        </a>
+    </div>
+</div>
+{% endblock %}

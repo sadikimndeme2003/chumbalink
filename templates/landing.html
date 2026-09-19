@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% block title %}ChumbaLink | Pata Chumba Salama Karibu na Chuo{% endblock %}
+{% block content %}
+
+<!-- HERO -->
+<section class="bg-brand-teal-dark text-white">
+    <div class="max-w-5xl mx-auto px-4 py-14 text-center">
+        <p class="text-amber-300 text-xs font-semibold tracking-widest uppercase mb-3">Udalali wa Vyumba</p>
+        <h1 class="text-3xl md:text-5xl font-bold leading-tight mb-4">
+            Chumba Chako Salama,<br class="hidden md:block"> Karibu na Chuo
+        </h1>
+        <p class="text-teal-100 max-w-xl mx-auto mb-8">
+            ChumbaLink inakuunganisha na vyumba halisi karibu na chuo chako — chuja kwa eneo, bei na umbali,
+            kisha tunakusaidia kukamilisha kila kitu kwa usalama, kupitia admin anayesimamia mchakato mzima.
+        </p>
+        <div class="flex flex-col sm:flex-row justify-center gap-3">
+            <a href="{{ url_for('main.browse') }}" class="bg-brand-amber hover:bg-amber-600 text-white px-6 py-3 rounded-lg font-semibold">
+                <i class="fa-solid fa-magnifying-glass"></i> Tazama Vyumba
+            </a>
+            {% if current_user and current_user.role == 'owner' %}
+                <a href="{{ url_for('room.new_room') }}" class="bg-white text-brand-teal-dark px-6 py-3 rounded-lg font-semibold">
+                    <i class="fa-solid fa-plus"></i> Weka Chumba Chako
+                </a>
+            {% else %}
+                <a href="{{ url_for('auth.register') }}" class="bg-white text-brand-teal-dark px-6 py-3 rounded-lg font-semibold">
+                    <i class="fa-solid fa-user-plus"></i> Jisajili
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- STATS -->
+<section class="max-w-4xl mx-auto px-4 py-8 text-center">
+    <div class="grid grid-cols-3 gap-4">
+        <div>
+            <p class="text-2xl md:text-3xl font-bold text-brand-teal-dark">{{ stats.rooms_count }}+</p>
+            <p class="text-xs text-slate-500 mt-1">Vyumba</p>
+        </div>
+        <div>
+            <p class="text-2xl md:text-3xl font-bold text-brand-teal-dark">{{ stats.owners_count }}+</p>
+            <p class="text-xs text-slate-500 mt-1">Wamiliki</p>
+        </div>
+        <div>
+            <p class="text-2xl md:text-3xl font-bold text-brand-teal-dark">{{ stats.completed_count }}+</p>
+            <p class="text-xs text-slate-500 mt-1">Maombi Yaliyokamilika</p>
+        </div>
+    </div>
+</section>
+
+{% if latest_rooms %}
+<!-- VYUMBA VIPYA -->
+<section class="max-w-5xl mx-auto px-4 pb-16">
+    <div class="flex justify-between items-center mb-5">
+        <h2 class="text-xl font-bold text-slate-800">Vyumba Vipya Vilivyowekwa</h2>
+        <a href="{{ url_for('main.browse') }}" class="text-sm text-brand-teal-dark font-semibold">Ona Vyote &rarr;</a>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {% for room in latest_rooms %}
+        <a href="{{ url_for('main.room_detail', room_id=room.id) }}" class="bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-lg transition-shadow">
+            <div class="h-36 bg-slate-100 flex items-center justify-center">
+                {% if room.thumbnail %}
+                    <img src="{{ room.thumbnail }}" class="w-full h-full object-cover" alt="{{ room.title }}">
+                {% else %}
+                    <i class="fa-solid fa-image text-3xl text-slate-300"></i>
+                {% endif %}
+            </div>
+            <div class="p-4">
+                <h3 class="font-semibold text-slate-800 truncate">{{ room.title }}</h3>
+                <p class="text-xs text-slate-500 mb-2"><i class="fa-solid fa-location-dot"></i> {{ room.area }}</p>
+                <span class="font-bold text-brand-teal-dark text-sm">TZS {{ "{:,.0f}".format(room.price) }}</span>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- TRUST BADGES -->
+<section class="max-w-5xl mx-auto px-4 -mt-6 relative z-10">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="bg-slate-900 text-white rounded-xl px-4 py-3 flex items-center gap-3 text-sm">
+            <i class="fa-solid fa-shield-halved text-brand-amber"></i> Admin Anakuunganisha Salama
+        </div>
+        <div class="bg-slate-900 text-white rounded-xl px-4 py-3 flex items-center gap-3 text-sm">
+            <i class="fa-solid fa-sliders text-brand-amber"></i> Chuja kwa Umbali na Bei
+        </div>
+        <div class="bg-slate-900 text-white rounded-xl px-4 py-3 flex items-center gap-3 text-sm">
+            <i class="fa-solid fa-images text-brand-amber"></i> Picha na Video za Kweli
+        </div>
+    </div>
+</section>
+
+<!-- KWA NINI CHUMBALINK -->
+<section class="max-w-4xl mx-auto px-4 py-16 text-center">
+    <p class="text-brand-amber text-xs font-semibold tracking-widest uppercase mb-2">Kwa Nini ChumbaLink</p>
+    <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mb-10">Tofauti na Kutafuta Chumba Mtaani</h2>
+
+    <div class="space-y-8 text-left max-w-2xl mx-auto">
+        <div class="flex gap-4">
+            <div class="w-10 h-10 rounded-full bg-teal-50 text-brand-teal-dark flex items-center justify-center shrink-0">
+                <i class="fa-solid fa-magnifying-glass-location"></i>
+            </div>
+            <div>
+                <h3 class="font-semibold text-slate-800">Ugumu wa kupata taarifa sahihi</h3>
+                <p class="text-sm text-slate-500 mt-1">Badala ya kuzunguka mtaani, chuja vyumba kwa eneo, bei, aina na umbali kutoka chuo kwa sekunde chache.</p>
+            </div>
+        </div>
+        <div class="flex gap-4">
+            <div class="w-10 h-10 rounded-full bg-teal-50 text-brand-teal-dark flex items-center justify-center shrink-0">
+                <i class="fa-solid fa-user-shield"></i>
+            </div>
+            <div>
+                <h3 class="font-semibold text-slate-800">Hatari ya kudanganywa</h3>
+                <p class="text-sm text-slate-500 mt-1">Admin anasimamia kila ombi na kukuunganisha na mwenye nyumba mwenyewe kabla ya malipo yoyote kufanyika.</p>
+            </div>
+        </div>
+        <div class="flex gap-4">
+            <div class="w-10 h-10 rounded-full bg-teal-50 text-brand-teal-dark flex items-center justify-center shrink-0">
+                <i class="fa-solid fa-video"></i>
+            </div>
+            <div>
+                <h3 class="font-semibold text-slate-800">Kukosa uhakika wa chumba halisi</h3>
+                <p class="text-sm text-slate-500 mt-1">Kila tangazo lina picha na video za kweli za chumba, hivyo unajua unachokipata kabla hujafika.</p>
+            </div>
+        </div>
+        <div class="flex gap-4">
+            <div class="w-10 h-10 rounded-full bg-teal-50 text-brand-teal-dark flex items-center justify-center shrink-0">
+                <i class="fa-solid fa-comments"></i>
+            </div>
+            <div>
+                <h3 class="font-semibold text-slate-800">Hakuna chumba kinachokufaa?</h3>
+                <p class="text-sm text-slate-500 mt-1">Jaza ombi maalum la eneo, bei na aina unayotaka, nasi tutakutafutia.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- JINSI INAVYOFANYA KAZI -->
+<section class="bg-slate-50 py-16 border-t border-slate-100">
+    <div class="max-w-4xl mx-auto px-4 text-center">
+        <p class="text-brand-amber text-xs font-semibold tracking-widest uppercase mb-2">Mchakato</p>
+        <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mb-10">Jinsi Inavyofanya Kazi</h2>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
+            <div class="bg-white border border-slate-200 rounded-xl p-5">
+                <span class="text-brand-amber font-bold text-2xl">1</span>
+                <h3 class="font-semibold text-slate-800 mt-2 mb-1">Chuja na Chagua</h3>
+                <p class="text-sm text-slate-500">Tafuta chumba kwa eneo, bei, aina na umbali kutoka chuo chako.</p>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-xl p-5">
+                <span class="text-brand-amber font-bold text-2xl">2</span>
+                <h3 class="font-semibold text-slate-800 mt-2 mb-1">Tuma Ombi</h3>
+                <p class="text-sm text-slate-500">Ukikipenda chumba, bonyeza "Omba Chumba Hiki" kwa hatua moja tu.</p>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-xl p-5">
+                <span class="text-brand-amber font-bold text-2xl">3</span>
+                <h3 class="font-semibold text-slate-800 mt-2 mb-1">Tunakuunganisha</h3>
+                <p class="text-sm text-slate-500">Admin anawasiliana na wewe na mwenye nyumba kukamilisha maelezo.</p>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-xl p-5">
+                <span class="text-brand-amber font-bold text-2xl">4</span>
+                <h3 class="font-semibold text-slate-800 mt-2 mb-1">Lipa kwa Usalama</h3>
+                <p class="text-sm text-slate-500">Malipo yanakamilika ukishuhudiwa na admin, kisha chumba ni chako.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA YA MWISHO -->
+<section class="bg-slate-900 text-white py-14">
+    <div class="max-w-2xl mx-auto px-4 text-center">
+        <h2 class="text-2xl md:text-3xl font-bold mb-3">Tayari Kupata Chumba Chako?</h2>
+        <p class="text-slate-300 mb-6">Anza kuvinjari vyumba vilivyopo karibu na chuo chako sasa hivi.</p>
+        <div class="flex flex-col sm:flex-row justify-center gap-3">
+            <a href="{{ url_for('main.browse') }}" class="bg-brand-amber hover:bg-amber-600 text-white px-6 py-3 rounded-lg font-semibold">
+                Tazama Vyumba
+            </a>
+            {% if not current_user %}
+            <a href="{{ url_for('auth.register') }}" class="border border-white text-white px-6 py-3 rounded-lg font-semibold">
+                Jisajili Sasa
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+{% endblock %}
